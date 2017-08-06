@@ -1,0 +1,174 @@
+<style media="screen">
+  body{
+    width: 100%;
+    height: 70%;
+    margin: 0;
+    padding: 0;
+    background: rgb(50,50,50);
+  }
+
+  .center-pos{
+    margin: auto;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+  }
+
+  .pacman-container{
+    width: 630px;
+    height: 630px;
+  }
+
+  .sizer{
+    width: 30px;
+    height: 30px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .wall{
+    background: #6997e0;
+  }
+
+  .gate{
+    background: #895e0f;
+  }
+
+  .empty{
+
+  }
+
+  .dot{
+    height: 25%;
+    width: 25%;
+    border-radius: 100%;
+    background: #fff430;
+  }
+
+  .big-dot{
+    height: 70%;
+    width: 70%;
+  }
+
+  .pac-man{
+    background-image: url("pacman-0.png");
+    z-index: 99;
+  }
+
+  .pink-ghost{
+    background-image: url("pink.png");
+    z-index: 99;
+  }
+
+  .orange-ghost{
+    background-image: url("orange.png");
+    z-index: 99;
+  }
+
+  .red-ghost{
+    background-image: url("red.png");
+    z-index: 99;
+  }
+
+  .blue-ghost{
+    background-image: url("blue.png");
+    z-index: 99;
+  }
+
+  .shityFuker{
+    background-image: url("sht.png");
+  }
+
+
+
+
+</style>
+
+<html>
+  <head>
+      <title>PAC-MAN</title>
+  </head>
+  <body>
+    <div class="pacman-container center-pos">
+    </div>
+  </body>
+</html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+
+  $(function(){
+    var pacman = new PAC_MAN('pacman-container');
+  });
+
+  class PAC_MAN {
+    constructor(container) {
+      // initializing variables
+      this.container = $('.'+container);
+      this.pacman = $('<div class="sizer empty"> <div class="pac-man center-pos"></div> </div>');
+      this.pink = $('<div class="sizer empty"> <div class="pink-ghost center-pos"></div> </div>');
+      this.orange = $('<div class="sizer empty"> <div class="orange-ghost center-pos"></div> </div>');
+      this.red = $('<div class="sizer empty"> <div class="red-ghost center-pos"></div> </div>');
+      this.blue = $('<div class="sizer empty"> <div class="blue-ghost center-pos"></div> </div>');
+
+      this.blocks = [
+        '<div class="sizer wall"></div>',
+        '<div class="sizer gate"></div>',
+        '<div class="sizer epmty"></div>',
+
+        '<div class="sizer epmty"> <div class="dot center-pos"></div> </div>',
+        '<div class="sizer epmty"> <div class="dot center-pos big-dot"></div> </div>',
+        this.pacman,
+        this.red,
+        this.blue,
+        this.pink,
+        this.orange
+      ];
+      // 0 wall // 1 gate // 2 empty // 3 dot // 4 big-dot
+      this.map = [
+        [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
+        [2,0,3,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,3,0,2],
+        [2,0,4,0,0,3,0,0,0,3,0,3,0,0,0,3,0,0,4,0,2],
+        [2,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,2],
+        [2,0,3,0,0,3,0,3,0,0,0,0,0,3,0,3,0,0,3,0,2],
+        [2,0,3,3,3,3,0,3,3,3,0,3,3,3,0,3,3,3,3,0,2],
+        [2,0,0,0,0,3,0,0,0,2,0,2,0,0,0,3,0,0,0,0,2],
+        [2,2,2,2,0,3,0,2,2,2,6,2,2,2,0,3,0,2,2,2,2],
+        [0,0,0,0,0,3,0,2,0,0,1,0,0,2,0,3,0,0,0,0,0],
+        [2,2,2,2,2,3,2,2,0,7,8,9,0,2,2,3,2,2,2,2,2],
+        [0,0,0,0,0,3,0,2,0,0,0,0,0,2,0,3,0,0,0,0,0],
+        [2,2,2,2,0,3,0,2,2,2,2,2,2,2,0,3,0,2,2,2,2],
+        [2,0,0,0,0,3,0,2,0,0,0,0,0,2,0,3,0,0,0,0,2],
+        [2,0,3,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,3,0,2],
+        [2,0,3,0,0,3,0,0,0,3,0,3,0,0,0,3,0,0,3,0,2],
+        [2,0,4,3,0,3,3,3,3,3,5,3,3,3,3,3,0,3,4,0,2],
+        [2,0,0,3,0,3,0,3,0,0,0,0,0,3,0,3,0,3,0,0,2],
+        [2,0,3,3,3,3,0,3,3,3,0,3,3,3,0,3,3,3,3,0,2],
+        [2,0,3,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,3,0,2],
+        [2,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,2],
+        [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
+      ];
+
+      // 'drawing' the whole map
+      for (var i = 0; i < this.map.length; i++) {
+        for (var j = 0; j < this.map[i].length; j++) {
+          this.container.append($( this.blocks[ this.map[i][j] ] ));
+        }
+      }
+
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
