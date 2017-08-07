@@ -104,7 +104,8 @@
     constructor(container) {
       // initializing variables
       this.container = $('.'+container);
-      this.pacman = $('<div class="sizer empty"> <div class="pac-man center-pos"></div> </div>');
+
+      this.pacman = new Pacman('<div class="sizer empty"> <div class="pac-man center-pos"></div> </div>');
       this.pink = $('<div class="sizer empty"> <div class="pink-ghost center-pos"></div> </div>');
       this.orange = $('<div class="sizer empty"> <div class="orange-ghost center-pos"></div> </div>');
       this.red = $('<div class="sizer empty"> <div class="red-ghost center-pos"></div> </div>');
@@ -114,10 +115,9 @@
         '<div class="sizer wall"></div>',
         '<div class="sizer gate"></div>',
         '<div class="sizer epmty"></div>',
-
         '<div class="sizer epmty"> <div class="dot center-pos"></div> </div>',
         '<div class="sizer epmty"> <div class="dot center-pos big-dot"></div> </div>',
-        this.pacman,
+        this.pacman.node,
         this.red,
         this.blue,
         this.pink,
@@ -147,14 +147,166 @@
         [2,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,2],
         [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
       ];
+      this.matrix = [];
+
+      this.sum_dots = 0;
 
       // 'drawing' the whole map
       for (var i = 0; i < this.map.length; i++) {
+        var row = [];
         for (var j = 0; j < this.map[i].length; j++) {
-          this.container.append($( this.blocks[ this.map[i][j] ] ));
+          var cell_val = this.map[i][j];
+
+          if(cell_val == 3 || cell_val == 4){
+            this.sum_dots += 1;
+          }
+
+          var act_cell = $( this.blocks[ cell_val ] );
+          row.push(act_cell);
+          this.container.append(act_cell);
+          if(cell_val > 4){
+            if(cell_val == 5){
+              this.pacman.setPos(j,i);
+            }
+            cell_val = 2;
+          }
         }
+        this.matrix.push(row);
+      }
+      this.pacman.setMap(this.map,this.matrix);
+
+      var self = this;
+
+      setInterval(function(){
+
+        self.pacman.move();
+
+      },200);
+
+      $('body').keydown(function(event){
+        switch (event.which) {
+          case 37:
+            self.pacman.setDirection(1);
+          break;
+          case 38:
+            self.pacman.setDirection(2);
+          break;
+          case 39:
+            self.pacman.setDirection(3);
+          break;
+          case 40:
+            self.pacman.setDirection(4);
+          break;
+        }
+      });
+
+    }
+  }
+
+  class Models {
+    constructor(node) {
+      this.node = node;
+      this.pos = {
+        x : 0,
+        y : 0
+      }
+      this.vel = {
+        x : 0,
+        y : 0
+      };
+      this.offset = this.node.offset();
+    }
+
+    getMatrixNode(){
+      return this.matrix[this.pos.y][this.pos.x];
+    }
+
+    getMapVal(offsetX = 0,offsetY = 0){
+      return this.map[this.pos.y + offsetY][this.pos.x + offsetX];
+    }
+
+    setMap(map,matrix){
+      this.map = map;
+      this.matrix = matrix;
+    }
+
+    setPos(x,y){
+      this.pos.x = x;
+      this.pos.y = y;
+    }
+
+    move(){
+      var self = this;
+      this.offset.top += this.vel.y * 30;
+      this.offset.left += this.vel.x * 30;
+      this.node.animate({
+        'top' : self.offset.top,
+        'left' : self.offset.left,
+      },150);
+      this.pos.x += this.vel.x;
+      this.pos.y += this.vel.y;
+    }
+
+
+  }
+
+  class Pacman extends Models {
+    constructor(container) {
+      super($(container));
+    }
+
+    setDirection(dir){
+      this.direction = dir;
+      // 1 left // 2 up // 3 right // 4 down //
+    }
+
+    move(){
+      switch (this.direction) {
+        case 1:
+          this.vel = (this.getMapVal(-1,0) > 1) ? {x:-1,y:0} : this.vel;
+        break;
+        case 2:
+          this.vel = (this.getMapVal(0,-1) > 1) ? {x:0,y:-1} : this.vel;
+        break;
+        case 3:
+          this.vel = (this.getMapVal(1,0) > 1) ? {x:1,y:0} : this.vel;
+        break;
+        case 4:
+          this.vel = (this.getMapVal(0,1) > 1) ? {x:0,y:1} : this.vel;
+        break;
+      }
+      if(this.getMapVal(this.vel.x,this.vel.y) > 1){
+
       }
 
+      if(this.getMapVal(this.vel.x,this.vel.y) > 1){
+        if(this.vel.x == 1){
+          this.rotate(90);
+        }else if(this.vel.x == -1){
+          this.rotate(270);
+        }else if(this.vel.y == -1){
+          this.rotate(0);
+        }else if(this.vel.y == 1){
+          this.rotate(180);
+        }
+
+        super.move();
+
+        switch(this.getMapVal()){
+          case 4:
+          case 3:
+            this.getMatrixNode().find('div').animate({
+              opacity: 0
+            },150,function(){
+              $(this).remove();
+            })
+          break;
+        }
+      }
+    }
+
+    rotate(deg){
+      this.node.css('transform','rotate('+deg+'deg)');
     }
   }
 
